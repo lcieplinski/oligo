@@ -15,11 +15,10 @@ var repo Repository
 
 // initialising database
 func Init() {
-	if db, err := sql.Open("sqlite3", "/tmp/test.db"); err == nil {
+	if db, err := sql.Open("sqlite3", "/tmp/olicooltown.db"); err == nil {
 		repo = Repository{DB: db}
 	} else {
 		log.Fatal("Database initialisation")
-		panic("Init, Error with database initialisation", 
 	}
 }
 

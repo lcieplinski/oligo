@@ -13,6 +13,7 @@ import (
 )
 
 func searchInAudd(sample string) repository.Metadata {
+	log.Println("searchInAudd: start; sample length: ", len(sample))
 	data, errD := base64.StdEncoding.DecodeString(sample)
  	if errD != nil {
 		panic("searchInAudd, Error in base64 decoding:" + errD.Error())
@@ -30,6 +31,7 @@ func searchInAudd(sample string) repository.Metadata {
         	panic("searchInAudd, Error occurred from Audd.io API:" + err.Error())
     	}
 	p := repository.Metadata{Id: "", Title: result.Title, Artist: result.Artist}
+	log.Println("searchInAudd: done; sample length: ", len(sample))
 	return p
 }
 
@@ -66,27 +68,27 @@ func matchMetadata(sampleMetadata repository.Metadata) (string, bool) {
 	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
 		panic("matchMetadata, Error in json decoding:" + err.Error())
 	}
-	log.Println("List is: ", list)
+	log.Println("matchMetadata: List is: ", list)
    	// loop through each ID
 	for i, id := range list {
-  	// request track from tracks service
+		// request track from tracks service
 		resp, err := http.Get("http://localhost:3000/tracks/" + id)
 		if err != nil {
 			panic("matchMetadata, Error in get request:" + err.Error())
 		}
 		var track repository.Track
 		if err := json.NewDecoder(resp.Body).Decode(&track); err != nil {
-			panic("matchMetadata, Error in json decoding :" + err.Error())
+			panic("matchMetadata, Error in json decoding: " + err.Error())
 		}
-		log.Println("Id is: ", track.Id)
 		// call searchInAudd with this track
+		log.Println("matchMetadata: searching for track", i, "[", track.Id, "]")
 		result := searchInAudd(track.Audio)
    		// compare returned metadata to sampleMetadata and if they match return id of that track
 		if result == sampleMetadata {
-			fmt.Printf("Track %d matched\n", i)
+			log.Println("matchMetadata: track", i, "[", track.Id, "] matched")
 			return track.Id, true
 		} else {
-			fmt.Printf("No match for %d\n", i)
+			log.Println("matchMetadata: no match for", i, "[", track.Id, "]")
 		}		
 	}   	
 	// if we get to the end and no match is found, then false is returned
